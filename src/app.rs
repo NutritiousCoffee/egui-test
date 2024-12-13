@@ -1,10 +1,13 @@
-/// We derive Deserialize/Serialize so we can persist app state on shutdown.
+use crate:: mandelbrot;
+use mandelbrot::in_mandelbrot;
+
+// We derive Deserialize/Serialize so we can persist app state on shutdown.
 #[derive(serde::Deserialize, serde::Serialize)]
 #[serde(default)] // if we add new fields, give them default values when deserializing old state
 pub struct TemplateApp {
     // Example stuff:
     label: String,
-
+    prompt: String,
     #[serde(skip)] // This how you opt-out of serialization of a field
     value: f32,
 }
@@ -14,6 +17,7 @@ impl Default for TemplateApp {
         Self {
             // Example stuff:
             label: "Hello World!".to_owned(),
+            prompt: "Test string".to_owned(),
             value: 2.7,
         }
     }
@@ -70,14 +74,20 @@ impl eframe::App for TemplateApp {
             ui.heading("eframe template");
 
             ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(&mut self.label);
+                ui.label(&self.prompt);
+                ui.text_edit_singleline(&mut self.prompt);
+                if ui.button("Mandelbrot Test").clicked(){
+                    dbg!(in_mandelbrot(0.1,0.2,1000));
+                    for n in 0..300{
+                        dbg!(0.0, 1.5-n as f64/100 as f64);
+                        dbg!(in_mandelbrot(0.0,1.5-n as f64/100 as f64,1000));
+                    }
+                    self.prompt = "Test geslaagd".to_string();
+                    dbg!("test");
+                }
             });
 
-            ui.add(egui::Slider::new(&mut self.value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                self.value += 1.0;
-            }
+
 
             ui.separator();
 
